@@ -1,42 +1,72 @@
-from Tkinter import *
+from Tkinter import Tk, Canvas, RIGHT, BOTH, RAISED
+from ttk import Frame, Button, Style
+
+class ZenTable(Frame):
+   
+   def __init__(self, parent):
+      Frame.__init__(self, parent)
+      self.parent = parent
+      self.initUI()
+      self.pack()
+
+   def initUI(self):
+      self.b1up = True
+      self.xold = None
+      self.yold = None
+      
+      self.parent.title("Buttons")
+      
+      #frame = Frame(self, relief=RAISED, borderwidth=1)
+      #frame.pack(fill=BOTH, expand=1)
+
+      drawing_area = Canvas(self.parent, width=600, height=600)
+      drawing_area.pack(fill=BOTH, expand=1)
+      drawing_area.bind("<Motion>",          self.h_motion)
+      drawing_area.bind("<ButtonPress-1>",   self.h_b1down)
+      drawing_area.bind("<ButtonRelease-1>", self.h_b1up)
+
+      self.drawing_area = drawing_area
+
+      self.pack(fill=BOTH, expand=1)
+      
+      self.style = Style()
+      self.style.theme_use("default")
+      closeButton = Button(self, text="Close")
+      closeButton.pack(side=RIGHT, padx=5, pady=5)
+      okButton = Button(self, text="OK")
+      okButton.pack(side=RIGHT)
 
 
-class ZenTable(object):
-   pass
+   def h_b1down(self, event):
+      # we only want to draw when the button is down
+      # because "Motion" events happen -all the time-
+      self.b1up = False
+      
+   def h_b1up(self, event):
+      self.b1up = True
+      self.xold = None           # reset the line when you let go of the button
+      self.yold = None
 
-b1 = "up"
-xold, yold = None, None
+   def h_motion(self, event):
+      if not self.b1up:
+         if self.xold is not None and self.yold is not None:
+            event.widget.create_line(self.xold,
+                                     self.yold,
+                                     event.x,
+                                     event.y,
+                                     smooth=False,
+                                     fill="red")
+                # here's where you draw it. smooth. neat.
+         self.xold = event.x
+         self.yold = event.y
+            
+
 
 def main():
     root = Tk()
-    c_width = 600
-    c_height = 600
-    drawing_area = Canvas(root, width=c_width, height=c_height)
-    drawing_area.pack()
-    drawing_area.bind("<Motion>", motion)
-    drawing_area.bind("<ButtonPress-1>", b1down)
-    drawing_area.bind("<ButtonRelease-1>", b1up)
+    table = ZenTable(root)
     root.mainloop()
 
-def b1down(event):
-    global b1
-    b1 = "down"           # you only want to draw when the button is down
-                          # because "Motion" events happen -all the time-
-
-def b1up(event):
-    global b1, xold, yold
-    b1 = "up"
-    xold = None           # reset the line when you let go of the button
-    yold = None
-
-def motion(event):
-    if b1 == "down":
-        global xold, yold
-        if xold is not None and yold is not None:
-            event.widget.create_line(xold,yold,event.x,event.y,smooth=TRUE)
-                          # here's where you draw it. smooth. neat.
-        xold = event.x
-        yold = event.y
 
 if __name__ == "__main__":
     main()

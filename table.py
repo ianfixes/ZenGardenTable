@@ -29,6 +29,10 @@ class ZenTable(Frame):
 
       self.pack(fill=BOTH, expand=1)
 
+   def get_rockpoint(self):
+      # copy the 2D array of rock points
+      return [row[:] for row in self.rockpoint]
+
    def h_b1down(self, event):
       # we only want to draw when the button is down
       # because "Motion" events happen -all the time-
@@ -84,6 +88,14 @@ class ZenTable(Frame):
 
          self.after(100, self.draw_frame)
 
+class BoustrophedonSolver(object):
+   def __init__(self, rockpoint_array):
+      self.rockpoint = rockpoint_array
+
+   def solve(self):
+      print "SOLVING IT"
+
+
 class ButtonBar(Frame):
    def __init__(self, parent, on_ok=None):
       Frame.__init__(self, parent, relief=RAISED, borderwidth=1)
@@ -124,8 +136,13 @@ def main():
 
    table = ZenTable(frame_t)
       
+   def solve_boustrophedon():
+      #table.debug()
+      bs = BoustrophedonSolver(table.get_rockpoint())
+      bs.solve()
 
-   buttons = ButtonBar(root, table.debug)
+
+   buttons = ButtonBar(root, solve_boustrophedon)
    root.mainloop()
 
 

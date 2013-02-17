@@ -7,7 +7,7 @@ Testbed for Zen Garden Table project
 Testing
 =======
 
-mini-buildbot.py "sh killit.sh ; sh startit.sh &" table.py
+mini-buildbot.py "sh killit.sh ; sh startit.sh &" table_main.py zen_table.py button_bar.py boustrophedon_solver.py
 
 
 References

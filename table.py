@@ -1,20 +1,25 @@
 from Tkinter import Tk, Canvas, RIGHT, BOTH, RAISED
 from ttk import Frame, Button, Style
 
+TBL_WIDTH=600
+TBL_HEIGHT=600
+
 class ZenTable(Frame):
-   
+   """
+   a UI element that allows drawing, then is drawn upon
+   """
+
    def __init__(self, parent):
       Frame.__init__(self, parent)
       self.parent = parent
       self.initUI()
       self.pack()
+      self.rockpoint = [[False for y in range(TBL_HEIGHT)] for x in range(TBL_WIDTH)]
 
    def initUI(self):
       self.b1up = True
-      self.xold = None
-      self.yold = None
       
-      drawing_area = Canvas(self.parent, width=600, height=600)
+      drawing_area = Canvas(self.parent, width=TBL_WIDTH, height=TBL_HEIGHT)
       drawing_area.pack(fill=BOTH, expand=1)
       drawing_area.bind("<Motion>",          self.h_motion)
       drawing_area.bind("<ButtonPress-1>",   self.h_b1down)
@@ -28,25 +33,35 @@ class ZenTable(Frame):
       # we only want to draw when the button is down
       # because "Motion" events happen -all the time-
       self.b1up = False
-      
+      self.reg_point(event)
+
    def h_b1up(self, event):
       self.b1up = True
-      self.xold = None           # reset the line when you let go of the button
-      self.yold = None
 
    def h_motion(self, event):
+      self.reg_point(event)
+
+   def reg_point(self, event):
       if not self.b1up:
-         if self.xold is not None and self.yold is not None:
-            event.widget.create_line(self.xold,
-                                     self.yold,
-                                     event.x,
+         try:
+            self.rockpoint[event.x][event.y] = True
+         
+            event.widget.create_line(event.x,
                                      event.y,
+                                     event.x+1,
+                                     event.y+1,
                                      smooth=False,
                                      fill="red")
-                # here's where you draw it. smooth. neat.
-         self.xold = event.x
-         self.yold = event.y
-            
+         except IndexError:
+            print "Ignoring %s, %s" % (event.x, event.y)
+      
+         
+   def debug(self):
+      for x, col in enumerate(self.rockpoint):
+         for y, is_point in enumerate(col):
+            if is_point:
+               print "point at %d, %d" % (x, y)
+
    def animate(self):
 
       self.animation_steps = 100
@@ -110,7 +125,7 @@ def main():
    table = ZenTable(frame_t)
       
 
-   buttons = ButtonBar(root, table.animate)
+   buttons = ButtonBar(root, table.debug)
    root.mainloop()
 
 

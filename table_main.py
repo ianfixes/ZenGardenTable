@@ -5,9 +5,9 @@ from zen_table import ZenTable
 from button_bar import ButtonBar
 from boustrophedon_solver import BoustrophedonSolver
 
-TBL_WIDTH=600
-TBL_HEIGHT=600
-BALL_RADIUS=3
+TBL_WIDTH=200
+TBL_HEIGHT=200
+BALL_RADIUS=10
 
 
 def main():

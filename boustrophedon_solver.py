@@ -1,56 +1,159 @@
 
 import math
 
+pythag = lambda x, y: math.sqrt(math.pow(x, 2) + math.pow(y, 2))
+pythag2 = lambda x1, y1, x2, y2: pythag(x1 - x2, y1 - y2)
+DEBUG = False
+
+class DisplacementError(Exception):
+   pass
+
 class BoustrophedonSolver(object):
+
    def __init__(self, rockpoint_array, canvas, ball_radius):
       self.rockpoint = rockpoint_array
       self.canvas = canvas
       self.radius = ball_radius
 
+
    def solve(self):
-       self.draw_point(599, 599, "blue")
 
-       self.draw_point(0,0)
+      covered = [[False for y in col] for col in self.rockpoint]
 
-       ctr = 2
-       for r in range(1, 2):
-           self.radius = r
-           covered = self.ball_coverage(ctr, ctr)
-           print "points with radius", r, covered
-           for (x, y) in covered:
-               print "drawing", x, y
-               self.draw_point(x, y, "blue")
-           ctr = ctr + (r * 2)
-       
+      for x, row in enumerate(self.rockpoint):
+         print "testing col", x
+         if x < (self.radius - 1): continue
+         if x > (len(self.rockpoint) - self.radius): continue
+         for y, is_rock in enumerate(row):
+            #print "testing ", x, y
+            # test coverage and verify no displacement
+            coverage = self.ball_coverage(x, y)
+            if DEBUG: print "ball coverage is", coverage
+            try:
+               d = self.displacement(x, y) #, coverage)
+               if (0, 0) == d:
+                  # all points ok
+                  for xc, yc in coverage:
+                     covered[xc][yc] = True
+            except DisplacementError:
+               pass
+            except IndexError:
+               print "failed", xc, yc
+               raise
+            except:
+               raise
 
-   def ball_coverage(self, ctr_x, ctr_y):
+      print "Drawing cols", 
+      for x, row in enumerate(self.rockpoint):
+         print ".",
+         for y, is_rock in enumerate(row):
+            if covered[x][y]:
+               
+               self.draw_point(x, y, "yellow")
+
+      print
+
+   def ball_coverage(self, ctr_x, ctr_y, radius=None):
        """
        get a list of (x, y) points covered by a ball at given center (ctr_x, ctr_y)
 
        points that overlap the edges are considered
        """
-
-       pythag = lambda x, y: math.sqrt(math.pow(x, 2) + math.pow(y, 2))
-       rr = self.radius - 1
+       
+       if None is radius:
+          rr = self.radius - 1
+       else:
+          rr = radius
 
        out = []
        for x in range(ctr_x - rr, ctr_x + rr + 1):
            for y in range(ctr_y - rr, ctr_y + rr + 1):
                if rr >= pythag(ctr_x-x, ctr_y-y):
                    out.append((x,y))
-
        return out
+
+   def is_rockpoint(self, x, y):
+      if 0 > x or 0 > y:
+         return True
+      if x >= len(self.rockpoint) or y >= len(self.rockpoint[0]):
+         return True
+      return self.rockpoint[x][y]
+
+   def displacement(self, ctr_x, ctr_y, coverage=None):
+      """
+      calculate the displacement of the ball from its desired center
+      """
+
+      # find coverage of ball
+      if None is coverage:
+         coverage = self.ball_coverage(ctr_x, ctr_y, self.radius)
+
+      # find any rock points within the ball
+      rockpoints = []
+      for (x, y) in coverage:
+         if self.is_rockpoint(x, y):
+            rockpoints.append((x, y))
+
+      if DEBUG: print "rockpoints are", rockpoints
+
+      # find the coverage of the rock points, subtract from initial coverage
+      uncoverage = set([])
+      for (x, y) in rockpoints:
+         for (rx, ry) in self.ball_coverage(x, y):
+            uncoverage.add((rx, ry))
+
+      # get the squares where coverage is allowed + their distance from ctr
+      allowed_coverage = []
+      for (x, y) in coverage:
+         if not (x, y) in uncoverage:
+            allowed_coverage.append((x, y, pythag2(ctr_x, ctr_y, x, y)))
+
+      # minimum displacement from center
+      # favor the lower x, y
+      def my_min(ac1, ac2):
+         if ac1 is None:
+            return ac2
+         elif ac2 is None:
+            return ac1
+
+         x1, y1, d1 = ac1
+         x2, y2, d2 = ac2
+
+         if d1 > d2: 
+            return ac2
+         elif d1 < d2:
+            return ac1
+         else:
+            if x1 == x2:
+               if y1 < y2:
+                  return ac1
+               else:
+                  return ac2
+            elif x1 > x2:
+               return ac2
+            else:
+               return ac1
+
+      # find what remaining point is the minimum distance from the center
+      # start with a bogus point
+      min_distance_point = None
+      for pt in allowed_coverage:
+         min_distance_point = my_min(min_distance_point, pt)
+
+      if min_distance_point is None:
+         raise DisplacementError("No allowed coverage for %d, %d" % (ctr_x, ctr_y))
+
+      xm, ym, _ = min_distance_point
+      return xm - ctr_x, ym - ctr_y
+
 
    def draw_point(self, x, y, color="black"):
        self.canvas.create_line(x, y, x+1, y, smooth=False, fill=color)
       
 
    def animate(self):
-
       self.animation_steps = 100
-
       self.draw_frame()
-
       print "Animate is done"
 
 

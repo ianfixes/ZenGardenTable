@@ -21,6 +21,8 @@ class ZenTable(Frame):
       
       drawing_area = Canvas(self.parent, width=self.table_width, height=self.table_height)
       drawing_area.pack(fill=BOTH, expand=1)
+      drawing_area.xview("moveto", 0) # http://tcl.sourceforge.net/faqs/tk/#canvas/border
+      drawing_area.yview("moveto", 0)
       drawing_area.bind("<Motion>",          self.h_motion)
       drawing_area.bind("<ButtonPress-1>",   self.h_b1down)
       drawing_area.bind("<ButtonRelease-1>", self.h_b1up)
@@ -32,6 +34,9 @@ class ZenTable(Frame):
    def get_rockpoint(self):
       # copy the 2D array of rock points
       return [row[:] for row in self.rockpoint]
+
+   def get_drawing_area(self):
+      return self.drawing_area
 
    def h_b1down(self, event):
       # we only want to draw when the button is down
@@ -49,17 +54,23 @@ class ZenTable(Frame):
       if not self.b1up:
          try:
             self.rockpoint[event.x][event.y] = True
-         
-            event.widget.create_line(event.x,
-                                     event.y,
-                                     event.x+1,
-                                     event.y+1,
-                                     smooth=False,
-                                     fill="red")
+            self.draw_point(event)
          except IndexError:
             print "Ignoring %s, %s" % (event.x, event.y)
       
          
+   def draw_point(self, event):
+      x = event.x
+      y = event.y
+
+#       # diagonal pair
+#       event.widget.create_line(x, y, x+1, y+1, smooth=False, fill="red")
+
+      # 3x3
+      for yy in range(y-1, y+2):
+         event.widget.create_line(x-1, yy, x+1, yy, smooth=False, fill="red")
+
+
    def debug(self):
       for x, col in enumerate(self.rockpoint):
          for y, is_point in enumerate(col):

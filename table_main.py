@@ -7,14 +7,7 @@ from boustrophedon_solver import BoustrophedonSolver
 
 TBL_WIDTH=600
 TBL_HEIGHT=600
-
-
-class BoustrophedonSolver(object):
-   def __init__(self, rockpoint_array):
-      self.rockpoint = rockpoint_array
-
-   def solve(self):
-      print "SOLVING IT"
+BALL_RADIUS=3
 
 
 def main():
@@ -27,8 +20,11 @@ def main():
    table = ZenTable(frame_t, TBL_WIDTH, TBL_HEIGHT)
       
    def solve_boustrophedon():
+      print "--------------" #
       #table.debug()
-      bs = BoustrophedonSolver(table.get_rockpoint())
+      bs = BoustrophedonSolver(table.get_rockpoint(), 
+                               table.get_drawing_area(),
+                               BALL_RADIUS)
       bs.solve()
 
 

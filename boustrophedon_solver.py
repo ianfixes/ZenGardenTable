@@ -110,7 +110,7 @@ class BoustrophedonSolver(object):
        else:
            tp = self.ball_shell_template
 
-       return [(x + ctr_x, y + ctr_y) for (x, y) in template]
+       return [(x + ctr_x, y + ctr_y) for (x, y) in tp]
 
 
 

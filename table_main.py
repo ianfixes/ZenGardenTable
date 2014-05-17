@@ -11,25 +11,25 @@ BALL_RADIUS=10
 
 
 def main():
-   root = Tk()
-   root.resizable(0, 0)
-   
-   frame_t = Frame(root)
-   frame_t.pack(fill=BOTH, expand=False)
+    root = Tk()
+    root.resizable(0, 0)
 
-   table = ZenTable(frame_t, TBL_WIDTH, TBL_HEIGHT)
-      
-   def solve_boustrophedon():
-      print "--------------" #
-      #table.debug()
-      bs = BoustrophedonSolver(table.get_rockpoint(), 
-                               table.get_drawing_area(),
-                               BALL_RADIUS)
-      bs.solve()
+    frame_t = Frame(root)
+    frame_t.pack(fill=BOTH, expand=False)
+
+    table = ZenTable(frame_t, TBL_WIDTH, TBL_HEIGHT)
+
+    def solve_boustrophedon():
+        print "--------------" #
+        #table.debug()
+        bs = BoustrophedonSolver(table.get_rockpoint(),
+                                 table.get_drawing_area(),
+                                 BALL_RADIUS)
+        bs.solve()
 
 
-   buttons = ButtonBar(root, solve_boustrophedon)
-   root.mainloop()
+    buttons = ButtonBar(root, solve_boustrophedon)
+    root.mainloop()
 
 
 

@@ -22,7 +22,9 @@ class BoustrophedonSolver(object):
     def visit_point(self, x, y):
         try:
             d = self.sensor.displacement(x, y, self.is_rockpoint) #, coverage)
-            if (0, 0) == d:
+            if (0, 0) != d:
+                return False
+            else:
                 # all points ok
                 if self.covered_first_point:
                     coverage = self.sensor.ball_shell(x, y)
@@ -33,33 +35,70 @@ class BoustrophedonSolver(object):
                 for xc, yc in coverage:
                     self.covered[xc][yc] = True
         except DisplacementError:
-            pass
+            return False
         except IndexError:
             print "failed", xc, yc
             raise
         except:
             raise
 
+        return True
+
+
+    def is_ball_contained(self, x, y):
+        lo = self.radius - 1
+        hi = len(self.rockpoint) - self.radius
+        if x < lo: return False
+        if x > hi: return False
+        if y < lo: return False
+        if y > hi: return False
+        return True
 
     # use fake omnipotent algorithm to exercise coverage algorithm
     def cover_bogo(self):
         for x, row in enumerate(self.rockpoint):
             print "testing col", x
-            if x < (self.radius - 1): continue
-            if x > (len(self.rockpoint) - self.radius): continue
             for y, is_rock in enumerate(row):
-                if y < (self.radius - 1): continue
-                if y > (len(self.rockpoint) - self.radius): continue
+                if not self.is_ball_contained(x, y): continue
                 #print "testing ", x, y
                 # test coverage and verify no displacement
                 self.visit_point(x, y)
 
 
+    # where position is (x, y)
+    def cover_floodfill(self):
+
+        def get_neighbors(xx, yy):
+            return [
+                (xx - 1, yy),
+                (xx, yy - 1),
+                (xx + 1, yy),
+                (xx, yy + 1),
+                    ]
+
+        flood_covered = [[False for y in col] for col in self.rockpoint]
+
+        S = [(self.radius + 1, self.radius + 1)] # start at 10,10 for funsies
+        while 0 < len(S):
+            (x, y) = S.pop()
+            print "Covering", x, y
+            # only get neighbors of points with no displacement... otherwise dead end
+            if not flood_covered[x][y]:
+                flood_covered[x][y] = True
+                if not self.visit_point(x, y): continue
+
+            for neighbor in get_neighbors(x, y):
+                xx, yy = neighbor
+                if not flood_covered[xx][yy]:
+                    if self.is_ball_contained(xx, yy):
+                        S.append(neighbor)
+
 
     def solve(self):
         self.reset()
 
-        self.cover_bogo()
+        #self.cover_bogo()
+        self.cover_floodfill()
 
         print "Drawing cols",
         for x, row in enumerate(self.rockpoint):
@@ -69,7 +108,6 @@ class BoustrophedonSolver(object):
                     self.draw_point(x, y, "yellow")
 
         print
-
 
 
     def is_rockpoint(self, x, y):

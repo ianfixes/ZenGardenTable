@@ -11,42 +11,59 @@ class BoustrophedonSolver(object):
         self.canvas = canvas
         self.radius = ball_radius
         self.sensor = DisplacementSensor(self.radius, DEBUG)
+        self.covered = None
+
+
+    def reset(self):
+        self.covered_first_point = False
+        self.covered = [[False for y in col] for col in self.rockpoint]
+
+
+    def visit_point(self, x, y):
+        try:
+            d = self.sensor.displacement(x, y, self.is_rockpoint) #, coverage)
+            if (0, 0) == d:
+                # all points ok
+                if self.covered_first_point:
+                    coverage = self.sensor.ball_shell(x, y)
+                else:
+                    self.covered_first_point = True
+                    coverage = self.sensor.ball_coverage(x, y)
+
+                for xc, yc in coverage:
+                    self.covered[xc][yc] = True
+        except DisplacementError:
+            pass
+        except IndexError:
+            print "failed", xc, yc
+            raise
+        except:
+            raise
+
 
     def solve(self):
 
-       covered = [[False for y in col] for col in self.rockpoint]
+        self.reset()
 
-       for x, row in enumerate(self.rockpoint):
-           print "testing col", x
-           if x < (self.radius - 1): continue
-           if x > (len(self.rockpoint) - self.radius): continue
-           for y, is_rock in enumerate(row):
-               #print "testing ", x, y
-               # test coverage and verify no displacement
-               coverage = self.sensor.ball_coverage(x, y)
-               if DEBUG: print "ball coverage is", coverage
-               try:
-                   d = self.sensor.displacement(x, y, self.is_rockpoint) #, coverage)
-                   if (0, 0) == d:
-                       # all points ok
-                       for xc, yc in coverage:
-                           covered[xc][yc] = True
-               except DisplacementError:
-                   pass
-               except IndexError:
-                   print "failed", xc, yc
-                   raise
-               except:
-                   raise
+        for x, row in enumerate(self.rockpoint):
+            print "testing col", x
+            if x < (self.radius - 1): continue
+            if x > (len(self.rockpoint) - self.radius): continue
+            for y, is_rock in enumerate(row):
+                if y < (self.radius - 1): continue
+                if y > (len(self.rockpoint) - self.radius): continue
+                #print "testing ", x, y
+                # test coverage and verify no displacement
+                self.visit_point(x, y)
 
-       print "Drawing cols",
-       for x, row in enumerate(self.rockpoint):
-           print ".",
-           for y, is_rock in enumerate(row):
-               if covered[x][y]:
-                   self.draw_point(x, y, "yellow")
+        print "Drawing cols",
+        for x, row in enumerate(self.rockpoint):
+            print ".",
+            for y, is_rock in enumerate(row):
+                if self.covered[x][y]:
+                    self.draw_point(x, y, "yellow")
 
-       print
+        print
 
 
 

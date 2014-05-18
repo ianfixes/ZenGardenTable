@@ -1,5 +1,6 @@
 
 from sensor import DisplacementSensor, DisplacementError
+from ida_star import IDAStar
 
 DEBUG = False
 
@@ -92,6 +93,9 @@ class BoustrophedonSolver(object):
                 if not flood_covered[xx][yy]:
                     if self.is_ball_contained(xx, yy):
                         S.append(neighbor)
+
+        # create IDAStar solver for stack pop travels
+
 
 
     def solve(self):

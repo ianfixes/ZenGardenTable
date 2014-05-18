@@ -41,10 +41,8 @@ class BoustrophedonSolver(object):
             raise
 
 
-    def solve(self):
-
-        self.reset()
-
+    # use fake omnipotent algorithm to exercise coverage algorithm
+    def cover_bogo(self):
         for x, row in enumerate(self.rockpoint):
             print "testing col", x
             if x < (self.radius - 1): continue
@@ -55,6 +53,13 @@ class BoustrophedonSolver(object):
                 #print "testing ", x, y
                 # test coverage and verify no displacement
                 self.visit_point(x, y)
+
+
+
+    def solve(self):
+        self.reset()
+
+        self.cover_bogo()
 
         print "Drawing cols",
         for x, row in enumerate(self.rockpoint):
@@ -74,7 +79,6 @@ class BoustrophedonSolver(object):
         col = self.rockpoint[x]
         if y >= len(col): return True
         return col[y]
-
 
 
     def draw_point(self, x, y, color="black"):

@@ -20,25 +20,27 @@ class IDAStar:
         bound = self.h(root)
 
         while(True):
-            t = self.search(root, 0, bound)
-            (next_bound, solution) = t
+            (next_bound, solution) = self.search(root, 0, bound)
+            # return solution or deepen search
             if solution is not None: return solution
             if next_bound is None:   return None
             bound = next_bound
         
 
     # returns (next_bound, solution) 
-    #          next_bound is None means not found
-    #                      solution is None means 
+    #          "next_bound is None" means dead end node
+    #            "solution is None" means dead end branch
     def search(self, node, g, bound):
         f = g + self.h(node)
         if f > bound:          return (f, None)
         if self.is_goal(node): return (f, node)
         min_bound = None
         for succ in self.successors(node):
-            t = self.search(succ, g + self.cost(node, succ), bound)
-            (next_bound, solution) = t
-            if solution is not None:                        return (f, solution)
-            if min_bound is None or min_bound > next_bound: min_bound = next_bound
+            (next_bound, solution) = self.search(succ, g + self.cost(node, succ), bound)
+            # return solution or set next search depth
+            if solution is not None:     return (f, solution)
+            elif min_bound is None:      min_bound = next_bound
+            elif min_bound > next_bound: min_bound = next_bound
+
         return (min_bound, None)
                             

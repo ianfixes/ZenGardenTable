@@ -106,6 +106,7 @@ class BoustrophedonSolver(object):
 
     # where position is (x, y)
     def cover_xytable(self):
+        total_distance = 0
 
         flood_covered = [[False for y in col] for col in self.rockpoint]
 
@@ -138,6 +139,7 @@ class BoustrophedonSolver(object):
 
             # steps to get us to new location
             current_to_new_location = path_planner.solve([new_loc])
+            total_distance += len(current_to_new_location)
 
             # now pretend we've arrived
             current_location = new_loc
@@ -153,7 +155,8 @@ class BoustrophedonSolver(object):
                     if self.is_ball_contained(xx, yy):
                         S.append(neighbor)
 
-
+        print "Total distance is", total_distance,
+        print "which has % efficiency", round(100.0 * (len(self.rockpoint) ** 2) / total_distance, 1)
 
 
     def solve(self):

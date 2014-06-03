@@ -35,9 +35,9 @@ class DisplacementSensor:
 
         # find any rock points within the ball
         rockpoints = []
-        for (x, y) in coverage:
-            if is_rockpoint_fn(x, y):
-                rockpoints.append((x, y))
+        for point in coverage:
+            if is_rockpoint_fn(point):
+                rockpoints.append(point)
 
         # early exit if no rocks
         if 0 == len(rockpoints):

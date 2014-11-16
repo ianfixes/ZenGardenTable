@@ -77,22 +77,3 @@ class ZenTable(Frame):
                if is_point:
                    print "point at %d, %d" % (x, y)
 
-   def animate(self):
-      self.animation_steps = 100
-      self.draw_frame()
-      print "Animate is done"
-
-
-   def draw_frame(self):
-       if 0 >= self.animation_steps:
-           print "DONE"
-       else:
-           p  = self.animation_steps
-           np = p - 1
-
-           self.drawing_area.create_line(p, p, np, np, smooth=False, fill="blue")
-           self.animation_steps = np
-
-         #self.update_idletasks()
-
-           self.after(100, self.draw_frame)

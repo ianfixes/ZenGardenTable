@@ -193,16 +193,17 @@ class BoustrophedonSolver(object):
         self.canvas.create_line(x, y, x+1, y, smooth=False, fill=color)
 
 
-    def animate(self):
+    def example_animate(self):
         self.animation_steps = 100
-        self.draw_frame()
+        self.example_draw_frame()
         print "Animate is done"
 
 
-    def draw_frame(self):
+    def example_draw_frame(self):
         if 0 >= self.animation_steps:
             print "DONE"
         else:
+            print "example_draw_frame"
             p  = self.animation_steps
             np = p - 1
 
@@ -211,4 +212,4 @@ class BoustrophedonSolver(object):
 
             #self.update_idletasks()
 
-            self.canvas.after(100, self.draw_frame)
+            self.canvas.after(100, self.example_draw_frame)

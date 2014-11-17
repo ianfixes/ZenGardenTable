@@ -22,9 +22,7 @@ def main():
     def solve_boustrophedon():
         print "--------------" #
         #table.debug()
-        bs = BoustrophedonSolver(table.get_rockpoint(),
-                                 table.get_drawing_area(),
-                                 BALL_RADIUS)
+        bs = BoustrophedonSolver(table, BALL_RADIUS)
         bs.solve()
 
 

@@ -7,22 +7,39 @@ DEBUG = False
 
 class BoustrophedonSolver(object):
 
-    def __init__(self, rockpoint_array, canvas, ball_radius):
-        self.rockpoint = rockpoint_array
-        self.canvas = canvas
+    def __init__(self, table, ball_radius):
+        self.table = table
+        self.rockpoint = table.get_rockpoint()
+        self.canvas = table.drawing_area
         self.radius = ball_radius
         self.sensor = DisplacementSensor(self.radius, DEBUG)
         self.covered = None
+        self.visited = None
+        self.path = None
 
 
     def reset(self):
         self.covered_first_point = False
         self.covered = [[False for y in col] for col in self.rockpoint]
+        self.visited = [[False for y in col] for col in self.rockpoint]
+        self.path = []
 
 
     def is_covered(self, point):
         x, y = point
         return self.covered[x][y]
+
+    def is_visited(self, point):
+        x, y = point
+        return self.visited[x][y]
+
+    def get_visited_list(self):
+        ret = []
+        for x, row in enumerate(self.visited):
+            for y, is_visited in enumerate(row):
+                if is_visited:
+                    ret.append((x, y))
+        return ret
 
 
     def visit_point(self, x, y):
@@ -32,7 +49,14 @@ class BoustrophedonSolver(object):
                 # we have detected a rock
                 return False
 
-            # no rock exists at this location, so cover the points
+            # else no rock exists at this location
+            self.visited[x][y] = True
+
+            # update info on where we "went"
+            self.path.append((x, y, True))
+
+            # mark points underneath ball as covered
+            # use full coverage the first time, but all other times we can just cover the shell
             if self.covered_first_point:
                 coverage = self.sensor.ball_shell(x, y)
             else:
@@ -122,33 +146,51 @@ class BoustrophedonSolver(object):
 
 
         S = [(self.radius + 1, self.radius + 1)] # start at 10,10 for funsies
+        self.visited[self.radius + 1][self.radius + 1] = True
         current_location = S[0]
         while 0 < len(S):
             new_loc = S.pop()
             (x, y) = new_loc
             (x0, y0) = current_location
 
+            # don't do all this twice
+            if flood_covered[x][y]: continue
+            flood_covered[x][y] = True
+
+            print current_location, "to", new_loc
+
             # set up the path planner, from the new point back to the current point
             # IDAStar(cost_fn, is_goal_fn, h_fn, successors_fn)
             cost_fn = lambda _, __  : 1
             is_goal_fn = lambda path : path[0] == current_location
             h_fn = lambda path : abs(path[0][0] - x0) + abs(path[0][1] - y0) # manhattan distance
-            successors_fn = lambda path : [[n] + path for n in get_neighbors(path[0])
-                                           if self.is_covered(n) and n not in path]
+            successors_fn = lambda path : [[n] + path 
+                                           for n in get_neighbors(path[0])
+                                           if n not in path and (self.is_visited(n) 
+                                                                 or n == current_location
+                                                                 or n == new_loc)]
             path_planner = IDAStar(cost_fn, is_goal_fn, h_fn, successors_fn)
-
+                
             # steps to get us to new location
             current_to_new_location = path_planner.solve([new_loc])
-            total_distance += len(current_to_new_location)
+            if current_to_new_location is None:
+                self.draw_pathplan_failure(current_location, new_loc)
+                raise AssertionError("Couldn't go from " + str(current_location) + " to " + str(new_loc))
+
+            print "path plan complete", len(current_to_new_location)
 
             # now pretend we've arrived
             current_location = new_loc
-            #print "Covering", x, y
-            # only get neighbors of points with no displacement... otherwise dead end
-            if not flood_covered[x][y]:
-                flood_covered[x][y] = True
-                if not self.visit_point(x, y): continue
 
+            # actually  visit points
+            total_distance += len(current_to_new_location) - 1
+            self.path += [(xx, yy, False) for (xx, yy) in current_to_new_location[1:-1]]
+            
+            
+            # only get neighbors of points with no displacement... otherwise dead end
+            if not self.visit_point(x, y): continue
+
+            # add new neighbors to the list of places we need to check
             for neighbor in get_neighbors(new_loc):
                 xx, yy = neighbor
                 if not flood_covered[xx][yy]:
@@ -160,20 +202,15 @@ class BoustrophedonSolver(object):
 
 
     def solve(self):
+
         self.reset()
 
         #self.cover_bogo()
         #self.cover_floodfill()
         self.cover_xytable()
 
-        print "Drawing cols",
-        for x, row in enumerate(self.rockpoint):
-            print ".",
-            for y, is_rock in enumerate(row):
-                if self.covered[x][y]:
-                    self.draw_point(x, y, "yellow")
+        self.animate_path(self.path)
 
-        print
 
 
     # whether a point is in the bounds of the table
@@ -190,7 +227,38 @@ class BoustrophedonSolver(object):
 
 
     def draw_point(self, x, y, color="black"):
-        self.canvas.create_line(x, y, x+1, y, smooth=False, fill=color)
+        self.table.draw_point(x, y, color)
+
+
+    # show point a, point b, and the visited places
+    def draw_pathplan_failure(self, p1, p2):
+        for p in self.get_visited_list():
+            self.draw_point(p[0], p[1], "black")
+
+        self.draw_point(p1[0], p1[1], "yellow")
+        self.draw_point(p2[0], p2[1], "yellow")
+    
+
+        
+    def animate_path(self, path):
+        self.path_to_animate = path[:]
+        self.draw_ball_path()
+
+    def draw_ball_path(self):
+        if 0 == len(self.path_to_animate): return
+
+        (x, y, exploratory) = self.path_to_animate.pop(0)
+        coverage = self.sensor.ball_shell(x, y)
+        
+        for xc, yc in coverage:
+            self.draw_point(xc, yc, "yellow")
+
+        if exploratory:
+            self.draw_point(x, y, "green")
+        else:
+            self.draw_point(x, y, "black")
+
+        self.canvas.after(1, self.draw_ball_path)
 
 
     def example_animate(self):

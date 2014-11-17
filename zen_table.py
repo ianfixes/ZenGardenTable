@@ -15,6 +15,7 @@ class ZenTable(Frame):
        self.initUI()
        self.pack()
        self.rockpoint = [[False for y in range(self.table_height)] for x in range(self.table_width)]
+       self.initCanvas()
 
    def initUI(self):
        self.b1up = True
@@ -30,6 +31,14 @@ class ZenTable(Frame):
        self.drawing_area = drawing_area
 
        self.pack(fill=BOTH, expand=1)
+
+
+   def initCanvas(self):
+       def makePoint(x, y):
+           return self.drawing_area.create_line(x, y, x+1, y, smooth=False, fill="gray")
+       
+       self.canvaspoint = [[makePoint(x, y) for y in range(self.table_height)] for x in range(self.table_width)]
+
 
    def get_rockpoint(self):
        # copy the 2D array of rock points
@@ -54,21 +63,21 @@ class ZenTable(Frame):
        if not self.b1up:
            try:
                self.rockpoint[event.x][event.y] = True
-               self.draw_point(event)
+               self.draw_large_point(event.x, event.y)
            except IndexError:
                print "Ignoring %s, %s" % (event.x, event.y)
 
 
-   def draw_point(self, event):
-       x = event.x
-       y = event.y
-
-#       # diagonal pair
-#       event.widget.create_line(x, y, x+1, y+1, smooth=False, fill="red")
-
-      # 3x3
+   # draw using the points already in the canvas
+   def draw_large_point(self, x, y, color="red"):
        for yy in range(y-1, y+2):
-           event.widget.create_line(x-1, yy, x+1, yy, smooth=False, fill="red")
+           for xx in range(x-1, x+2):
+               self.draw_point(xx, yy, color)
+       
+
+   # draw using the points already in the canvas
+   def draw_point(self, x, y, color):
+       self.drawing_area.itemconfig(self.canvaspoint[x][y], fill=color)
 
 
    def debug(self):

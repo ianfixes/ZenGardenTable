@@ -162,15 +162,21 @@ class BoustrophedonSolver(object):
             # set up the path planner, from the new point back to the current point
             # IDAStar(cost_fn, is_goal_fn, h_fn, successors_fn)
             cost_fn = lambda _, __  : 1
-            is_goal_fn = lambda path : path[0] == current_location
             h_fn = lambda path : abs(path[0][0] - x0) + abs(path[0][1] - y0) # manhattan distance
-            successors_fn = lambda path : [[n] + path 
+            is_goal_fn = lambda path : path[0] == current_location
+            successors_fn = lambda path : [[n] + path
                                            for n in get_neighbors(path[0])
-                                           if n not in path and (self.is_visited(n) 
+                                           if n not in path and (self.is_visited(n)
                                                                  or n == current_location
                                                                  or n == new_loc)]
-            path_planner = IDAStar(cost_fn, is_goal_fn, h_fn, successors_fn)
-                
+            is_goal_fn = lambda path : path[-1] == current_location
+            successors_fn = lambda path : [path + [n]
+                                           for n in get_neighbors(path[-1])
+                                           if n not in path and (self.is_visited(n)
+                                                                 or n == current_location
+                                                                 or n == new_loc)]
+            path_planner = IDAStar(cost_fn, is_goal_fn, h_fn, successors_fn, self.hack_draw_planned_path)
+
             # steps to get us to new location
             current_to_new_location = path_planner.solve([new_loc])
             if current_to_new_location is None:
@@ -185,8 +191,8 @@ class BoustrophedonSolver(object):
             # actually  visit points
             total_distance += len(current_to_new_location) - 1
             self.path += [(xx, yy, False) for (xx, yy) in current_to_new_location[1:-1]]
-            
-            
+
+
             # only get neighbors of points with no displacement... otherwise dead end
             if not self.visit_point(x, y): continue
 
@@ -237,9 +243,9 @@ class BoustrophedonSolver(object):
 
         self.draw_point(p1[0], p1[1], "yellow")
         self.draw_point(p2[0], p2[1], "yellow")
-    
 
-        
+
+
     def animate_path(self, path):
         self.path_to_animate = path[:]
         self.draw_ball_path()
@@ -249,7 +255,7 @@ class BoustrophedonSolver(object):
 
         (x, y, exploratory) = self.path_to_animate.pop(0)
         coverage = self.sensor.ball_shell(x, y)
-        
+
         for xc, yc in coverage:
             self.draw_point(xc, yc, "yellow")
 
@@ -259,6 +265,23 @@ class BoustrophedonSolver(object):
             self.draw_point(x, y, "black")
 
         self.canvas.after(1, self.draw_ball_path)
+
+
+    def hack_draw_planned_path(self, p1, p2, plan):
+        print "drawing visited list...",
+        for (x, y) in self.get_visited_list():
+            self.draw_point(x, y, "black")
+        print "done"
+
+        for (x, y) in plan:
+            self.draw_point(x, y, "blue")
+
+        for (x, y) in [p1, p2]:
+            self.draw_point(x, y, "green")
+
+        print "updateing idletasks...",
+        self.canvas.update_idletasks()
+        print "done"
 
 
     def example_animate(self):

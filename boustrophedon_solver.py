@@ -1,6 +1,6 @@
 
 from sensor import DisplacementSensor, DisplacementError
-from ida_star import IDAStar
+from a_star import AStar
 
 DEBUG = False
 
@@ -145,56 +145,52 @@ class BoustrophedonSolver(object):
                     ])
 
 
-        S = [(self.radius + 1, self.radius + 1)] # start at 10,10 for funsies
-        self.visited[self.radius + 1][self.radius + 1] = True
-        current_location = S[0]
+        S         = [(self.radius + 1, self.radius + 1)]        # start at 10,10 for funsies
+        self.path = [(self.radius + 1, self.radius + 1, True)]  # mark path as exploratory
+        current_location = None
         while 0 < len(S):
             new_loc = S.pop()
             (x, y) = new_loc
-            (x0, y0) = current_location
+            if current_location is not None:
+                (x0, y0) = current_location
 
-            # don't do all this twice
-            if flood_covered[x][y]: continue
-            flood_covered[x][y] = True
+                # don't do all this twice
+                if flood_covered[x][y]: continue
+                flood_covered[x][y] = True
 
-            print current_location, "to", new_loc
+                # set up the path planner, from the new point back to the current point
+                # AStar(cost_fn, is_goal_fn, h_fn, successors_fn)
+                cost_fn = lambda _, __  : 1
+                h_fn = lambda (x, y) : abs(x - x0) + abs(y - y0) # manhattan distance
+                is_goal_fn = lambda path : path == current_location
+                successors_fn = lambda node : [n
+                                               for n in get_neighbors(node)
+                                               if (self.is_visited(n)
+                                                   or n == current_location
+                                                   or n == new_loc)]
 
-            # set up the path planner, from the new point back to the current point
-            # IDAStar(cost_fn, is_goal_fn, h_fn, successors_fn)
-            cost_fn = lambda _, __  : 1
-            h_fn = lambda path : abs(path[0][0] - x0) + abs(path[0][1] - y0) # manhattan distance
-            is_goal_fn = lambda path : path[0] == current_location
-            successors_fn = lambda path : [[n] + path
-                                           for n in get_neighbors(path[0])
-                                           if n not in path and (self.is_visited(n)
-                                                                 or n == current_location
-                                                                 or n == new_loc)]
-            is_goal_fn = lambda path : path[-1] == current_location
-            successors_fn = lambda path : [path + [n]
-                                           for n in get_neighbors(path[-1])
-                                           if n not in path and (self.is_visited(n)
-                                                                 or n == current_location
-                                                                 or n == new_loc)]
-            path_planner = IDAStar(cost_fn, is_goal_fn, h_fn, successors_fn, self.hack_draw_planned_path)
+                path_planner = AStar(cost_fn, is_goal_fn, h_fn, successors_fn, self.hack_draw_planned_path)
 
-            # steps to get us to new location
-            current_to_new_location = path_planner.solve([new_loc])
-            if current_to_new_location is None:
-                self.draw_pathplan_failure(current_location, new_loc)
-                raise AssertionError("Couldn't go from " + str(current_location) + " to " + str(new_loc))
+                # steps to get us to new location
+                current_to_new_location = path_planner.solve(new_loc)
+                if current_to_new_location is None:
+                    self.draw_pathplan_failure(current_location, new_loc)
+                    raise AssertionError("Couldn't go from " + str(current_location) + " to " + str(new_loc))
 
-            print "path plan complete", len(current_to_new_location)
 
-            # now pretend we've arrived
-            current_location = new_loc
+                # actually visit points
+                total_distance += len(current_to_new_location) - 2
+                self.path += [(xx, yy, False) for (xx, yy) in current_to_new_location[1:-1]]
 
-            # actually  visit points
-            total_distance += len(current_to_new_location) - 1
-            self.path += [(xx, yy, False) for (xx, yy) in current_to_new_location[1:-1]]
 
+            current_location = self.path[-1][:2]
 
             # only get neighbors of points with no displacement... otherwise dead end
             if not self.visit_point(x, y): continue
+
+            # we've arrived
+            current_location = new_loc
+            total_distance += 1
 
             # add new neighbors to the list of places we need to check
             for neighbor in get_neighbors(new_loc):
@@ -204,7 +200,7 @@ class BoustrophedonSolver(object):
                         S.append(neighbor)
 
         print "Total distance is", total_distance,
-        print "which has % efficiency", round(100.0 * (len(self.rockpoint) ** 2) / total_distance, 1)
+        print "which has % efficiency", round(100.0 * len(self.get_visited_list()) / total_distance, 1)
 
 
     def solve(self):

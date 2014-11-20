@@ -246,6 +246,7 @@ class BoustrophedonSolver(object):
         self.path_to_animate = path[:]
         self.draw_ball_path()
 
+
     def draw_ball_path(self):
         if 0 == len(self.path_to_animate): return
 

@@ -5,6 +5,8 @@ from zen_table import ZenTable
 from button_bar import ButtonBar
 from boustrophedon_solver import BoustrophedonSolver
 
+from sand_ripple import SandRipple
+
 TBL_WIDTH=200
 TBL_HEIGHT=200
 BALL_RADIUS=10
@@ -26,7 +28,22 @@ def main():
         bs.solve()
 
 
+
+    def draw_ripples():
+        rip = SandRipple(TBL_WIDTH, TBL_HEIGHT)
+        for i in range(200):
+            print "Iteration #", i
+            rip.iterate(20.0, 0.5, 0.0, 0.0, 0.1, 0.8, 0, 1)
+
+            for x, col in enumerate(rip.normalize(255)):
+                for y, val in enumerate(col):
+                    myColor = "#%0.2x%0.2x%0.2x" % ((val,) * 3)
+                    table.draw_point(x, y, myColor)
+            table.drawing_area.update_idletasks()
+
+
     buttons = ButtonBar(root, solve_boustrophedon, table.resetSimulation)
+    #buttons = ButtonBar(root, draw_ripples, table.resetSimulation)        # do the sand ripple sim
     root.mainloop()
 
 

@@ -16,7 +16,7 @@ class SandRipple(object):
 
     # @w: width in pixels
     # @h: height in pixels
-    def generateOutput(w, h):
+    def generateOutput(self, w, h):
         data = self.generateInitial(w, h, 1.0, 10.0, 0)
         data = self.ripples2(data, 20.0, 0.5, 0.0, 0.0, 0.1, 0.8, 0, 200)
         self.normalize(data, 255.0)
@@ -44,7 +44,7 @@ class SandRipple(object):
 
 
     # return 2d height map with v
-    def generateInitial(self.w, h, aHeightVariation, aHeightOffset, aSeed):
+    def generateInitial(self, w, h, aHeightVariation, aHeightOffset, aSeed):
         random.seed(aSeed)
         return [[random.gauss(aHeightOffset, aHeightVariation) for _ in range(h)] for __ in range(w)]
 
@@ -65,8 +65,8 @@ class SandRipple(object):
 
         # surprisingly, python doesn't build this in
         def sign(x):
-            if x < 0 return -1
-            if 0 < x return 1
+            if x < 0: return -1
+            if 0 < x: return 1
             return 0
 
         cols = len(H)
@@ -107,8 +107,8 @@ class SandRipple(object):
                     grainAmt = -1.0 * grain * (1 + math.tanh(delH))
 
                     # this is where the grains blow
-                    blowToX = round(x + hopLengthX) % cols
-                    blowToY = round(y + hopLengthY) % rows
+                    blowToX = int(round(x + hopLengthX)) % cols
+                    blowToY = int(round(y + hopLengthY)) % rows
 
                     Heven[x][y] = Heven[x][y] - grainAmt
                     Heven[blowToX][blowToY] = Heven[blowToX][blowToY] + grainAmt;
@@ -127,7 +127,7 @@ class SandRipple(object):
                     # TODO: integer 1,2,3,4 represent enum values
                     if ((h - hR) > math.tan(critAng)):
                         sandIndex.append(1)
-                        b.append(math.tan(critAng) + hR - h])
+                        b.append(math.tan(critAng) + hR - h)
 
                     if (h - hRD) / (math.sqrt(2)) > math.tan(critAng):
                         sandIndex.append(2)
@@ -137,28 +137,29 @@ class SandRipple(object):
                         sandIndex.append(3)
                         b.append(math.tan(critAng) + hD - h)
 
-                    if (h - hLD) / (sqrt(2)) > math.tan(critAng):
+                    if (h - hLD) / (math.sqrt(2)) > math.tan(critAng):
                         sandIndex.append(4)
-                        b.append(sqrt(2) * math.tan(critAng) + hLD - h)
+                        b.append(math.sqrt(2) * math.tan(critAng) + hLD - h)
 
                     # create matrix of -1s with -2s on the diagonal
                     n = len(b)
-                    A = [[-2 if i == j else -1 for i in range(n)] for j in range(n)]
+                    if 0 < n:
+                        A = [[-2 if i == j else -1 for i in range(n)] for j in range(n)]
 
-                    sandShift = np.linalg.solve(numpy.array(A), numpy.array(b))
+                        sandShift = numpy.linalg.solve(numpy.array(A), numpy.array(b))
 
-                    for i, o in enumerate(sandIndex):
-                        shift = sandShift[i]
-                        if o == 1:
-                            Heven[x][yR] = hR + shift
-                        elif o == 2:
-                            Heven[xD][yR] = hRD + shift
-                        elif o == 3:
-                            Heven[xD][y] = hD + shift
-                        elif o == 4:
-                            Heven[xD][yL] = hLD + shift
+                        for i, o in enumerate(sandIndex):
+                            shift = sandShift[i]
+                            if o == 1:
+                                Heven[x][yR] = hR + shift
+                            elif o == 2:
+                                Heven[xD][yR] = hRD + shift
+                            elif o == 3:
+                                Heven[xD][y] = hD + shift
+                            elif o == 4:
+                                Heven[xD][yL] = hLD + shift
 
-                    Heven[x][y] -= sum(sandShift)
+                        Heven[x][y] -= sum(sandShift)
 
             Hodd = [col[:] for col in Heven]
 

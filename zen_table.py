@@ -14,8 +14,8 @@ class ZenTable(Frame):
        self.table_height = table_height
        self.initUI()
        self.pack()
-       self.rockpoint = [[False for y in range(self.table_height)] for x in range(self.table_width)]
        self.initCanvas()
+       self.resetSimulation()
 
    def initUI(self):
        self.b1up = True
@@ -31,6 +31,16 @@ class ZenTable(Frame):
        self.drawing_area = drawing_area
 
        self.pack(fill=BOTH, expand=1)
+
+
+   def resetSimulation(self):
+       # clear rockpoint array
+       self.rockpoint = [[False for y in range(self.table_height)] for x in range(self.table_width)]
+
+       # clear pixels
+       for x in range(self.table_width):
+           for y in range(self.table_height):
+               self.draw_point(x, y, "gray")
 
 
    def initCanvas(self):

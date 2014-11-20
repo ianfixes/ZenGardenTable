@@ -4,10 +4,11 @@ from ttk import Frame, Button, Style
 
 class ButtonBar(Frame):
 
-    def __init__(self, parent, on_ok=None):
+    def __init__(self, parent, on_ok=None, on_reset=None):
         Frame.__init__(self, parent, relief=RAISED, borderwidth=1)
-        self.parent = parent
-        self.on_ok = on_ok
+        self.parent   = parent
+        self.on_ok    = on_ok
+        self.on_reset = on_reset
 
         self.pack()
         self.initUI()
@@ -24,6 +25,10 @@ class ButtonBar(Frame):
         ok_button.pack(side=RIGHT)
         ok_button.bind("<ButtonRelease-1>", self.h_ok)
 
+        rs_button = Button(self, text="Reset")
+        rs_button.pack(side=RIGHT)
+        rs_button.bind("<ButtonRelease-1>", self.h_rst)
+
         self.pack(fill=BOTH, expand=False)
 
     def h_close(self, event):
@@ -33,3 +38,7 @@ class ButtonBar(Frame):
         if self.on_ok:
             self.on_ok()
         print "ButtonBar.h_ok is done"
+
+    def h_rst(self, event):
+        if self.on_reset:
+            self.on_reset()

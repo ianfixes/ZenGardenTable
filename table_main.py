@@ -26,7 +26,7 @@ def main():
         bs.solve()
 
 
-    buttons = ButtonBar(root, solve_boustrophedon)
+    buttons = ButtonBar(root, solve_boustrophedon, table.resetSimulation)
     root.mainloop()
 
 

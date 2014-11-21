@@ -122,6 +122,7 @@ class SandRipple(object):
                     Heven[x][y] = Heven[x][y] + gravity * (firstNbrSum + secondNbrSum - h)
                     # TODO: this looks wrong because we are not transferring sand...
 
+                    """
                     #  AVALANCHE if the slope gets too big
                     
                     sandIndex = []
@@ -163,6 +164,7 @@ class SandRipple(object):
                                 Heven[xD][yL] = hLD + shift
 
                         Heven[x][y] -= sum(sandShift)
+                        """
 
 
             Hodd = [col[:] for col in Heven]

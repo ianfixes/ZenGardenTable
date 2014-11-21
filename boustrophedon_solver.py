@@ -252,18 +252,19 @@ class BoustrophedonSolver(object):
 
 
     def draw_ball_path(self):
-        if 0 == len(self.path_to_animate): return
+        for _ in range(4):
+            if 0 == len(self.path_to_animate): return
 
-        (x, y, exploratory) = self.path_to_animate.pop(0)
-        coverage = self.sensor.ball_shell(x, y)
+            (x, y, exploratory) = self.path_to_animate.pop(0)
+            coverage = self.sensor.ball_shell(x, y)
 
-        for xc, yc in coverage:
-            self.draw_point(xc, yc, "yellow")
+            for xc, yc in coverage:
+                self.draw_point(xc, yc, "yellow")
 
-        if exploratory:
-            self.draw_point(x, y, "green")
-        else:
-            self.draw_point(x, y, "black")
+                if exploratory:
+                    self.draw_point(x, y, "green")
+                else:
+                    self.draw_point(x, y, "black")
 
 
         if self.keep_animating:

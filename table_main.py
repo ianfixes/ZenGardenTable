@@ -41,8 +41,8 @@ def main():
                     table.draw_point(x, y, myColor)
             table.drawing_area.update_idletasks()
 
-
-    buttons = ButtonBar(root, solve_boustrophedon, table.resetSimulation)
+            
+    buttons = ButtonBar(root, solve_boustrophedon, on_reset) # do the explorer
     #buttons = ButtonBar(root, draw_ripples, table.resetSimulation)        # do the sand ripple sim
     root.mainloop()
 

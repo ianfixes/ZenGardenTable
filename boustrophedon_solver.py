@@ -9,7 +9,6 @@ class BoustrophedonSolver(object):
 
     def __init__(self, table, ball_radius):
         self.table = table
-        self.rockpoint = table.get_rockpoint()
         self.canvas = table.drawing_area
         self.radius = ball_radius
         self.sensor = DisplacementSensor(self.radius, DEBUG)
@@ -205,6 +204,7 @@ class BoustrophedonSolver(object):
 
     def solve(self):
 
+        self.rockpoint = self.table.get_rockpoint()
         self.reset()
 
         #self.cover_bogo()
@@ -241,8 +241,12 @@ class BoustrophedonSolver(object):
         self.draw_point(p2[0], p2[1], "yellow")
 
 
+    def stop_animating(self):
+        self.keep_animating = False
+
 
     def animate_path(self, path):
+        self.keep_animating = True
         self.path_to_animate = path[:]
         self.draw_ball_path()
 
@@ -261,7 +265,9 @@ class BoustrophedonSolver(object):
         else:
             self.draw_point(x, y, "black")
 
-        self.canvas.after(1, self.draw_ball_path)
+
+        if self.keep_animating:
+            self.canvas.after(1, self.draw_ball_path)
 
 
     def hack_draw_planned_path(self, p1, p2, plan):

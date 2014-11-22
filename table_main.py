@@ -21,12 +21,18 @@ def main():
 
     table = ZenTable(frame_t, TBL_WIDTH, TBL_HEIGHT)
 
+    bs = BoustrophedonSolver(table, BALL_RADIUS)
+
+
     def solve_boustrophedon():
         print "--------------" #
         #table.debug()
-        bs = BoustrophedonSolver(table, BALL_RADIUS)
         bs.solve()
 
+
+    def on_reset():
+        bs.stop_animating()
+        table.resetSimulation()
 
 
     def draw_ripples():

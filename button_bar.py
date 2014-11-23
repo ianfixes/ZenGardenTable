@@ -35,10 +35,7 @@ class ButtonBar(Frame):
         self.parent.destroy()
 
     def h_ok(self, event):
-        if self.on_ok:
-            self.on_ok()
-        print "ButtonBar.h_ok is done"
+        if self.on_ok: self.on_ok()
 
     def h_rst(self, event):
-        if self.on_reset:
-            self.on_reset()
+        if self.on_reset: self.on_reset()

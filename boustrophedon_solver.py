@@ -1,6 +1,7 @@
 
 from sensor import DisplacementSensor, DisplacementError
 from a_star import AStar
+import ball
 
 DEBUG = False
 
@@ -65,10 +66,10 @@ class BoustrophedonSolver(object):
             # mark points underneath ball as covered
             # use full coverage the first time, but all other times we can just cover the shell
             if self.covered_first_point:
-                coverage = self.sensor.ball_shell(x, y)
+                coverage = ball.shell(x, y, self.sensor.ball_shell_template)
             else:
                 self.covered_first_point = True
-                coverage = self.sensor.ball_coverage(x, y)
+                coverage = ball.coverage(x, y, self.radius)
 
             for xc, yc in coverage:
                 self.covered[xc][yc] = True
@@ -266,7 +267,7 @@ class BoustrophedonSolver(object):
 
         for i, (x, y, exploratory) in enumerate(self.path_to_animate):
 
-            coverage = self.sensor.ball_shell(x, y)
+            coverage = ball.shell(x, y, self.sensor.ball_shell_template)
             
             for xc, yc in coverage:
                 self.draw_point(xc, yc, "yellow")

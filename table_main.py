@@ -28,6 +28,9 @@ def main():
         print "--------------" #
         #table.debug()
         bs.solve()
+        bs.animate_path(15)
+        bs.show_covered_points()
+        bs.show_visited_points()
 
 
     def on_reset():

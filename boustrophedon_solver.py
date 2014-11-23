@@ -40,6 +40,14 @@ class BoustrophedonSolver(object):
                     ret.append((x, y))
         return ret
 
+    def get_covered_list(self):
+        ret = []
+        for x, row in enumerate(self.covered):
+            for y, is_visited in enumerate(row):
+                if is_visited:
+                    ret.append((x, y))
+        return ret
+
 
     def visit_point(self, x, y):
         try:
@@ -211,7 +219,6 @@ class BoustrophedonSolver(object):
         #self.cover_floodfill()
         self.cover_xytable()
 
-        self.animate_path(self.path)
 
 
 
@@ -241,34 +248,40 @@ class BoustrophedonSolver(object):
         self.draw_point(p2[0], p2[1], "yellow")
 
 
+    def show_visited_points(self):
+        for p in self.get_visited_list():
+            self.draw_point(p[0], p[1], "green")
+
+    def show_covered_points(self):
+        for p in self.get_covered_list():
+            self.draw_point(p[0], p[1], "yellow")
+
     def stop_animating(self):
         self.keep_animating = False
 
 
-    def animate_path(self, path):
+    def animate_path(self, speed=1):
         self.keep_animating = True
-        self.path_to_animate = path[:]
-        self.draw_ball_path()
+        self.path_to_animate = self.path[:]
 
+        for i, (x, y, exploratory) in enumerate(self.path_to_animate):
 
-    def draw_ball_path(self):
-        for _ in range(4):
-            if 0 == len(self.path_to_animate): return
-
-            (x, y, exploratory) = self.path_to_animate.pop(0)
             coverage = self.sensor.ball_shell(x, y)
-
+            
             for xc, yc in coverage:
                 self.draw_point(xc, yc, "yellow")
-
+                
                 if exploratory:
                     self.draw_point(x, y, "green")
                 else:
                     self.draw_point(x, y, "black")
 
+            # only animate sometimes, to speed things up
+            if 0 == (i % speed): 
+                self.canvas.update_idletasks()
 
-        if self.keep_animating:
-            self.canvas.after(1, self.draw_ball_path)
+        self.canvas.update_idletasks()
+
 
 
     def hack_draw_planned_path(self, p1, p2, plan):

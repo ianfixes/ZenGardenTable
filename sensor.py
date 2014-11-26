@@ -10,18 +10,14 @@ class DisplacementError(Exception):
 
 class DisplacementSensor:
     
-    def __init__(self, ball_radius, do_debug):
-        self.radius = ball_radius
+    def __init__(self, ball, do_debug):
+        self.ball = ball
         self.DEBUG = do_debug
-
-        # pre-generate coverage templates based on the radius size
-        self.ball_coverage_template = ball.get_coverage_template(self.radius)
-        self.ball_shell_template    = ball.get_shell_template(self.ball_coverage_template)
 
     def set_debug(self, enabled):
         self.DEBUG = enabled
 
-    def displacement(self, ctr_x, ctr_y, is_rockpoint_fn, coverage=None):
+    def displacement(self, ctr_x, ctr_y, is_rockpoint_fn):
         """
         calculate the displacement of the ball from its desired center
 
@@ -29,13 +25,9 @@ class DisplacementSensor:
         of the remaining points, the one closest to the original center is the displacement
         """
 
-        # find coverage of ball
-        if None is coverage:
-            coverage = ball.coverage(ctr_x, ctr_y, self.radius)
-
         # find any rock points within the ball
         rockpoints = []
-        for point in coverage:
+        for point in self.ball.coverage(ctr_x, ctr_y):
             if is_rockpoint_fn(point):
                 rockpoints.append(point)
 
@@ -48,12 +40,12 @@ class DisplacementSensor:
         # find the coverage of the rock points, subtract from initial coverage
         uncoverage = set([])
         for (x, y) in rockpoints:
-            for (rx, ry) in ball.coverage(x, y, self.radius):
+            for (rx, ry) in self.ball.coverage(x, y):
                 uncoverage.add((rx, ry))
 
         # get the squares where coverage is allowed + their distance from ctr
         allowed_coverage = []
-        for (x, y) in coverage:
+        for (x, y) in self.ball.coverage(ctr_x, ctr_y):
             if not (x, y) in uncoverage:
                 allowed_coverage.append((x, y, pythag(ctr_x, ctr_y, x, y)))
 

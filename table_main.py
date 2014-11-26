@@ -4,6 +4,7 @@ from ttk import Frame, Button, Style
 from zen_table import ZenTable
 from button_bar import ButtonBar
 from boustrophedon_solver import BoustrophedonSolver
+from ball import Ball
 
 from sand_ripple import SandRipple
 
@@ -21,8 +22,8 @@ def main():
 
     table = ZenTable(frame_t, TBL_WIDTH, TBL_HEIGHT)
 
-    bs = BoustrophedonSolver(table, BALL_RADIUS)
-
+    ball = Ball(BALL_RADIUS)
+    bs = BoustrophedonSolver(table, ball)
 
     def solve_boustrophedon():
         print "--------------" #

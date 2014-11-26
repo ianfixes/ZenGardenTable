@@ -8,11 +8,12 @@ DEBUG = False
 
 class BoustrophedonSolver(object):
 
-    def __init__(self, table, ball_radius):
+    def __init__(self, table, ball):
         self.table = table
+        self.ball = ball
+        self.radius = self.ball.radius
         self.canvas = table.drawing_area
-        self.radius = ball_radius
-        self.sensor = DisplacementSensor(self.radius, DEBUG)
+        self.sensor = DisplacementSensor(ball, DEBUG)
         self.covered = None
         self.visited = None
         self.path = None
@@ -66,10 +67,10 @@ class BoustrophedonSolver(object):
             # mark points underneath ball as covered
             # use full coverage the first time, but all other times we can just cover the shell
             if self.covered_first_point:
-                coverage = ball.shell(x, y, self.sensor.ball_shell_template)
+                coverage = self.ball.shell(x, y)
             else:
                 self.covered_first_point = True
-                coverage = ball.coverage(x, y, self.radius)
+                coverage = self.ball.coverage(x, y)
 
             for xc, yc in coverage:
                 self.covered[xc][yc] = True

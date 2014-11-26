@@ -53,7 +53,7 @@ class BoustrophedonSolver(object):
 
     def visit_point(self, x, y):
         try:
-            d = self.sensor.displacement(x, y, self.is_rockpoint) #, coverage)
+            d = self.sensor.displacement(x, y)
             if (0, 0) != d:
                 # we have detected a rock
                 return False
@@ -215,6 +215,7 @@ class BoustrophedonSolver(object):
     def solve(self):
 
         self.rockpoint = self.table.get_rockpoint()
+        self.sensor.set_rockpoint_fn(self.is_rockpoint)
         self.reset()
 
         #self.cover_bogo()

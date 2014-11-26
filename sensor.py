@@ -8,16 +8,23 @@ class DisplacementError(Exception):
     pass
 
 
-class DisplacementSensor:
-    
+class RockSensor(object):
+
     def __init__(self, ball, do_debug):
         self.ball = ball
         self.DEBUG = do_debug
+        self.is_rockpoint = None
 
     def set_debug(self, enabled):
         self.DEBUG = enabled
 
-    def displacement(self, ctr_x, ctr_y, is_rockpoint_fn):
+    def set_rockpoint_fn(self, is_rockpoint_fn):
+        self.is_rockpoint = is_rockpoint_fn
+
+
+class DisplacementSensor(RockSensor):
+    
+    def displacement(self, ctr_x, ctr_y):
         """
         calculate the displacement of the ball from its desired center
 
@@ -28,7 +35,7 @@ class DisplacementSensor:
         # find any rock points within the ball
         rockpoints = []
         for point in self.ball.coverage(ctr_x, ctr_y):
-            if is_rockpoint_fn(point):
+            if self.is_rockpoint(point):
                 rockpoints.append(point)
 
         # early exit if no rocks

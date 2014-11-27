@@ -254,10 +254,12 @@ class BoustrophedonSolver(object):
     def show_visited_points(self):
         for p in self.get_visited_list():
             self.draw_point(p[0], p[1], "green")
+        self.canvas.update_idletasks()
 
     def show_covered_points(self):
         for p in self.get_covered_list():
             self.draw_point(p[0], p[1], "yellow")
+        self.canvas.update_idletasks()
 
     def stop_animating(self):
         self.keep_animating = False

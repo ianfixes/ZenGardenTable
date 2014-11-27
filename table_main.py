@@ -4,6 +4,7 @@ from ttk import Frame, Button, Style
 from zen_table import ZenTable
 from button_bar import ButtonBar
 from boustrophedon_solver import BoustrophedonSolver
+from contour_solver import ContourSolver
 from ball import Ball
 
 from sand_ripple import SandRipple
@@ -24,14 +25,17 @@ def main():
 
     ball = Ball(BALL_RADIUS)
     bs = BoustrophedonSolver(table, ball)
+    cs = ContourSolver(table, ball, bs.is_rockpoint)
 
     def solve_boustrophedon():
         print "--------------" #
         #table.debug()
         bs.solve()
-        bs.animate_path(15)
+        #bs.animate_path(15)
         bs.show_covered_points()
         bs.show_visited_points()
+        cs.solve(bs.get_visited_list(), 3)
+        cs.draw_contours()
 
 
     def on_reset():

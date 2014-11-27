@@ -7,6 +7,7 @@ class Ball(object):
         self.radius = radius
         self.coverage_template = Ball.get_coverage_template(radius)
         self.shell_template    = Ball.get_shell_template(self.coverage_template)
+        self.sorted_template   = {}
 
 
     @staticmethod
@@ -48,8 +49,7 @@ class Ball(object):
         
         points that overlap the edges are considered
         """
-        
-        return [(x + ctr_x, y + ctr_y) for (x, y) in self.coverage_template]
+        return self._coverage(ctr_x, ctr_y, self.coverage_template)
 
 
 
@@ -61,3 +61,22 @@ class Ball(object):
         return [(x + ctr_x, y + ctr_y) for (x, y) in self.shell_template]
 
 
+    def coverage_sorted(self, ctr_x, ctr_y, do_center_first):
+        self.check_sorted_template(do_center_first)
+        return self._coverage(ctr_x, ctr_y, self.sorted_template[do_center_first])
+
+
+    def _coverage(self, ctr_x, ctr_y, template):
+        return [(x + ctr_x, y + ctr_y) for (x, y) in template]
+    
+
+    def check_sorted_template(self, do_center_first):
+        """
+        create a template sorted by radius if it does not already exist
+        """
+        if do_center_first in self.sorted_template: return
+
+        dists = [((x, y), math.hypot(x, y)) for (x, y) in self.coverage_template]
+        key_fn = lambda (p, r): r
+        pairs = sorted(dists, key=key_fn, reverse=(not do_center_first))
+        self.sorted_template[do_center_first] = [p for (p, r) in pairs]

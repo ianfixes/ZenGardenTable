@@ -6,6 +6,7 @@ from button_bar import ButtonBar
 from boustrophedon_solver import BoustrophedonSolver
 from contour_solver import ContourSolver
 from ball import Ball
+from background import LinearBackground
 
 from sand_ripple import SandRipple
 
@@ -26,6 +27,7 @@ def main():
     ball = Ball(BALL_RADIUS)
     bs = BoustrophedonSolver(table, ball)
     cs = ContourSolver(table, ball, bs.is_rockpoint)
+    bg = LinearBackground(table, ball)
 
     def solve_boustrophedon():
         print "--------------" #
@@ -36,6 +38,8 @@ def main():
         bs.show_visited_points()
         cs.solve(bs.get_visited_list(), 3)
         cs.draw_contours()
+        bg.solve(bs.get_visited_list(), dict([(p, v is not None) for (p, v) in cs.proximity_map.iteritems()]))
+        bg.draw()
 
 
     def on_reset():

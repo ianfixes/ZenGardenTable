@@ -14,7 +14,7 @@ class ContourSolver(object):
         self.canvas = table.drawing_area
         self.contours = []
         self.is_rockpoint = is_rockpoint
-
+        self.proximity_map = {}
 
     def solve(self, visited, num_contours):
         # initialize the proximity sensor
@@ -23,6 +23,7 @@ class ContourSolver(object):
         ps = ProximitySensor(proxball, False)
         ps.set_rockpoint_fn(self.is_rockpoint)
         visited_hash = dict([(x, True) for x in visited]) # whitelist for prox sensor
+        self.proximity_map = {}
         
         fudge = 0.71 # 1 / sqrt(2)
 
@@ -30,6 +31,7 @@ class ContourSolver(object):
         all_contour_points = []
         for i, (x, y) in enumerate(visited):
             prox = ps.proximity(x, y, visited_hash)
+            self.proximity_map[(x, y)] = prox
             if prox is None: continue
 
             if 1 <= (prox % self.ball.radius) <= (1 + fudge):
